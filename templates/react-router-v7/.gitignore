@@ -1,0 +1,25 @@
+# dependency
+.DS_Store
+/node_modules/
+
+# React Router
+/.react-router/
+/build/
+
+# editor
+.vscode
+*storybook.log
+storybook-static
+
+# testing
+coverage
+
+# env
+.env*
+
+# playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+/playwright/.auth/

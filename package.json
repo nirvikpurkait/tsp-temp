@@ -1,0 +1,40 @@
+{
+  "name": "tsp-temp",
+  "version": "0.0.1",
+  "description": "",
+  "scripts": {
+    "pretest": "pnpm build:cli",
+    "test": "vitest -c ./test/vitest.config.ts",
+    "build:cli": "tsc -p scripts/tsconfig.json"
+  },
+  "bin": {
+    "tsp-temp": "./scripts/bin/tsp-temp.js"
+  },
+  "files": [
+    "scripts/bin/*.js",
+    "README.md"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nirvikpurkait/templates.git"
+  },
+  "keywords": [],
+  "author": "",
+  "bugs": {
+    "url": "https://github.com/nirvikpurkait/templates/issues"
+  },
+  "homepage": "https://github.com/nirvikpurkait/templates#readme",
+  "devDependencies": {
+    "@types/node": "^24.9.1",
+    "@types/yargs": "^17.0.33",
+    "node-pty": "^1.0.0",
+    "nx": "21.6.5",
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.4"
+  },
+  "dependencies": {
+    "chalk": "^5.6.2",
+    "enquirer": "^2.4.1",
+    "yargs": "^18.0.0"
+  }
+}

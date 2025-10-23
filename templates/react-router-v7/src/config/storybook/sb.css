@@ -1,0 +1,94 @@
+@import "../../styles/app.css";
+@import "tailwindcss";
+
+.sbdocs-wrapper {
+  background-color: hsl(0, 0%, 11%) !important;
+}
+
+.sbdocs-content {
+  background-color: hsl(0, 0%, 14%) !important;
+  padding: 1rem !important;
+  border-radius: 4px;
+  border: 2px solid hsl(0, 0%, 22%);
+}
+
+.sbdocs-content * {
+  color: hsl(0, 0%, 98%) !important;
+}
+
+.sbdocs-title {
+  color: hsl(0, 0%, 98%) !important;
+}
+
+.sbdocs-preview {
+  border: 2px solid hsl(0, 0%, 40%) !important;
+}
+
+.sbdocs-preview .sb-bar {
+  background-color: hsl(0, 0%, 14%) !important;
+}
+
+.docs-story {
+  background-color: hsl(0, 0%, 0%) !important;
+}
+
+.docs-story > :nth-child(2) {
+  background: transparent !important;
+}
+
+.docblock-code-toggle {
+  color: hsl(0, 0%, 2%) !important;
+}
+
+.docblock-argstable-head * {
+  background-color: hsl(0, 0%, 14%) !important;
+  color: hsl(0, 0%, 98%) !important;
+}
+
+.docblock-argstable-body * {
+  background-color: hsl(0, 0%, 10%) !important;
+  color: hsl(0, 0%, 98%) !important;
+}
+
+.prismjs * {
+  font-size: 20px !important;
+  margin-top: 4px !important;
+  line-height: 24px;
+  font-family: "Consolas", sans-serif !important;
+  font-optical-sizing: auto;
+  font-style: normal;
+}
+
+span.token.tag {
+  font-weight: 500;
+}
+
+span.token.tag.punctuation {
+  color: hsl(0, 0%, 39%) !important;
+}
+
+span.token.tag.class-name {
+  color: hsl(168, 53%, 55%) !important;
+}
+
+span.token.tag.attr-name,
+span.token.tag.script.language-javascript.operator,
+span.token.tag.script.language-javascript.literal-property.property {
+  color: hsl(197, 71%, 73%) !important;
+}
+
+span.token.tag.attr-value.punctuation.attr-equals,
+span.token.tag.script.language-javascript.script-punctuation.punctuation,
+span.token.tag.attr-value.punctuation,
+span.token.tag.attr-value,
+span.token.tag.script.language-javascript.string {
+  color: hsl(25, 57%, 55%) !important;
+}
+
+span.token.tag.script.language-javascript.punctuation {
+  color: hsl(52, 100%, 50%) !important;
+}
+
+span.token.tag {
+  color: hsl(207, 61%, 59%) !important;
+}

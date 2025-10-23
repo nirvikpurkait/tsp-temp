@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "target": "ES2020", // JS version output
+    "module": "esnext", // Module system (use "ESNext" for ESM)
+    "moduleResolution": "bundler", // Resolve modules like Node.js
+    "strict": true, // Enable all strict type checks
+    "esModuleInterop": true, // Allow default imports from CommonJS
+    "skipLibCheck": true, // Skip type checks for .d.ts files
+    "outDir": "build", // Output directory
+    "rootDir": "src", // Root source folder
+    "resolveJsonModule": true, // Allow importing JSON files
+    "allowJs": false, // Set to true if using JS too
+    "declaration": true, // Emit `.d.ts` type Files
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  },
+  "include": ["src"], // Files/folders to include
+  "exclude": ["node_modules", "build"] // Files/folders to exclude
+}

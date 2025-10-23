@@ -1,0 +1,30 @@
+{
+  "name": "ts-project-template",
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "prebuild": "rimraf build",
+    "build": "tsc && tsc-alias && fix-esm-import-path build",
+    "start": "node build/index.js",
+    "build:package": "pnpm format && pnpm lint && pnpm build",
+    "lint": "eslint",
+    "format": "prettier --write **/*.{ts,tsx} --config ./prettier.config.cjs",
+    "precommit": "lint-staged"
+  },
+  "lint-staged": {
+    "**/*.ts": "pnpm format"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^8.46.2",
+    "@typescript-eslint/parser": "^8.46.2",
+    "eslint": "^9.37.0",
+    "fix-esm-import-path": "^1.10.3",
+    "prettier": "^3.6.2",
+    "rimraf": "^6.0.1",
+    "tsc-alias": "^1.8.16",
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.46.2"
+  }
+}
