@@ -1,6 +1,6 @@
 {
   "name": "tsp-temp",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "A cli tool to create a template from git repository",
   "scripts": {
     "pretest": "pnpm build:cli",
