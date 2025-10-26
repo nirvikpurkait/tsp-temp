@@ -1,1 +1,2 @@
-*.js
+bin/*.js
+hooks/*.js

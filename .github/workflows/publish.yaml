@@ -1,0 +1,36 @@
+name: Publish to npm
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write # allow tag pushing
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code # imitates cloning the repo into local amachine
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js # imitates installing node.js into local machine
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          registry-url: "https://registry.npmjs.org/"
+
+      - name: Install pnpm # imitates installing pnpm as a package manager
+        run: npm install -g pnpm
+
+      - name: Install dependencies # imitates installation of packages
+        run: pnpm install
+
+      - name: Check & publish # imitates running the script
+        run: node scripts/workflows/publish.js
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

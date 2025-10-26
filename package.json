@@ -1,11 +1,14 @@
 {
   "name": "tsp-temp",
   "version": "0.0.1",
-  "description": "",
+  "description": "A cli tool to create a template from git repository",
   "scripts": {
     "pretest": "pnpm build:cli",
     "test": "vitest -c ./test/vitest.config.ts",
-    "build:cli": "tsc -p scripts/tsconfig.json"
+    "build:cli": "tsc -p scripts/tsconfig.bin.json",
+    "build:workflows": "tsc -p scripts/tsconfig.workflows.json",
+    "precommit": "tsc scripts/hooks/precommit.ts && node scripts/hooks/precommit.js",
+    "prepare": "husky"
   },
   "bin": {
     "tsp-temp": "./scripts/bin/tsp-temp.js"
@@ -16,17 +19,29 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/nirvikpurkait/templates.git"
+    "url": "git+https://github.com/nirvikpurkait/tsp-temp.git"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "template",
+    "typescript",
+    "project"
+  ],
+  "author": "Nirvik Purkait",
+  "license": "MIT",
+  "contributors": [
+    {
+      "email": "nirvikpurkait@gamil.com",
+      "name": "Nirvik Purkait"
+    }
+  ],
   "bugs": {
-    "url": "https://github.com/nirvikpurkait/templates/issues"
+    "url": "https://github.com/nirvikpurkait/tsp-temp/issues"
   },
-  "homepage": "https://github.com/nirvikpurkait/templates#readme",
+  "homepage": "https://github.com/nirvikpurkait/tsp-temp#readme",
   "devDependencies": {
     "@types/node": "^24.9.1",
     "@types/yargs": "^17.0.33",
+    "husky": "^9.1.7",
     "node-pty": "^1.0.0",
     "nx": "21.6.5",
     "typescript": "^5.9.3",
@@ -34,6 +49,7 @@
   },
   "dependencies": {
     "chalk": "^5.6.2",
+    "cli-table3": "^0.6.5",
     "enquirer": "^2.4.1",
     "yargs": "^18.0.0"
   }
