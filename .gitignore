@@ -13,3 +13,7 @@ node_modules
 
 # testing
 test-result
+
+# scripts
+scripts/bin/*.js
+scripts/hooks/*.js

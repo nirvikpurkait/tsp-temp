@@ -2,6 +2,7 @@ import { execSync, ExecSyncOptionsWithStringEncoding } from "child_process";
 import fs from "fs";
 
 async function main() {
+  console.log("git fetch --tags");
   console.log("🔍 Fetching tags...");
   runCommand("git fetch --tags");
 
@@ -10,15 +11,18 @@ async function main() {
   const tagName = `v${version}`;
   console.log(`📦 Package version: ${tagName}`);
 
+  console.log("git tag -l");
   const existingTags = runCommand("git tag -l").split("\n");
   if (existingTags.includes(tagName)) {
     console.log("✅ Version already published, skipping.");
     process.exit(0);
   }
 
+  console.log("pnpm build:cli");
   console.log("🧱 Building project...");
   runCommand("pnpm build:cli");
 
+  console.log("npm publish --access public");
   console.log("🚀 Publishing to npm...");
   try {
     runCommand("npm publish --access public", {
