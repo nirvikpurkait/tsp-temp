@@ -31,8 +31,18 @@ export function showOptions() {
         "Provide a remote repository of template to use. Only use it with custom template other than provided templates",
       type: "string",
     })
+    .option("template-branch", {
+      describe:
+        "Provide repository branch to generate from. Only use it with custom template other than provided templates",
+      type: "string",
+    })
     .option("skip-install", {
       describe: "Skips installation of dependencies",
+      type: "boolean",
+    })
+    .option("expensive-way", {
+      describe:
+        "Creates template in an expensive way, if the provided remote source is not supported by cli.\nIt might fail as well.\nProviding support for other remote source is under way",
       type: "boolean",
     })
     // .option("assets", {
@@ -51,12 +61,12 @@ export function showOptions() {
 }
 
 export type CliErrorCode =
-  | "EINTERNAL"
-  | "ENOEMPTYDIR"
-  | "EMOVERES"
-  | "EREMTEMPSOUR"
-  | "EDIRNOEXIST"
-  | "ENOTEMPSOURC";
+  | "E_INTERNAL"
+  | "E_NO_EMPTY_DIR"
+  | "E_MOVE_RES"
+  | "E_REM_TEMP_SOURCE"
+  | "E_DIR_NOT_EXIST"
+  | "E_NO_TEMP_SOURCE";
 
 export class CliError extends Error {
   code: CliErrorCode;
@@ -71,17 +81,17 @@ export class CliError extends Error {
 
   private __generatedMessage() {
     switch (this.code) {
-      case "EDIRNOEXIST":
+      case "E_DIR_NOT_EXIST":
         return "The template path you have provided does not exists";
-      case "EINTERNAL":
+      case "E_INTERNAL":
         return "Uh-uh, Something went wrong internally";
-      case "EMOVERES":
+      case "E_MOVE_RES":
         return "Uh-uh, Something went wrong while moving resources to right location";
-      case "ENOEMPTYDIR":
+      case "E_NO_EMPTY_DIR":
         return "Projct exists with some files, please clean the project to start a new one";
-      case "EREMTEMPSOUR":
+      case "E_REM_TEMP_SOURCE":
         return "Uh-uh, Something went wrong while templating your project";
-      case "ENOTEMPSOURC":
+      case "E_NO_TEMP_SOURCE":
         return "The template source you have provided does not exists";
     }
   }

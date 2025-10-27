@@ -1,3 +1,5 @@
+import axios, { AxiosError } from "axios";
+import fse from "fs-extra";
 import { exec, execSync } from "node:child_process";
 import fs from "node:fs/promises";
 import yargs from "yargs";
@@ -6,35 +8,11 @@ import { prompt } from "enquirer";
 import path from "node:path";
 import { CliError } from "./use-utility";
 import { promisify } from "node:util";
+import { templateNameMetaData } from "./data";
 
 const execAsync = promisify(exec);
 
 type PackageManager = "npm" | "pnpm" | "yarn";
-
-/**
- * the key is shown to user to select
- * the value is used in program
- */
-const templateNameMapping: Record<
-  string,
-  { templateName: string; templatePath: string; templateUserFacingName: string }
-> = {
-  nextjs: {
-    templateName: "nextjs",
-    templatePath: "templates/nextjs",
-    templateUserFacingName: "Next.Js",
-  },
-  "react-router-v7": {
-    templateName: "react-router-v7",
-    templatePath: "templates/react-router-v7",
-    templateUserFacingName: "React Router v7",
-  },
-  "vanila-ts": {
-    templateName: "vanila-ts",
-    templatePath: "templates/vanila-ts",
-    templateUserFacingName: "Vanila TS",
-  },
-};
 
 const argv = yargs(hideBin(process.argv)).parse();
 const cwd = process.cwd();
@@ -90,7 +68,7 @@ let selectedTemplatePath: string | undefined = (() => {
 
     if (latestMentionedTemplate) {
       const latestMentionedTemplatePath = Object.values(
-        templateNameMapping
+        templateNameMetaData
       ).reduce<string>((acc, curr) => {
         if (curr.templateName === latestMentionedTemplate) {
           acc = curr.templatePath;
@@ -138,11 +116,11 @@ export async function useTemplate() {
       message: "Which template you want to use?",
       name: "selectedTemplatePath",
       required: true,
-      choices: Object.values(templateNameMapping).map(
+      choices: Object.values(templateNameMetaData).map(
         (t) => t.templateUserFacingName
       ),
       result: (value: string): string => {
-        return Object.values(templateNameMapping).reduce<string>(
+        return Object.values(templateNameMetaData).reduce<string>(
           (acc, curr) => {
             if (curr.templateUserFacingName === value) {
               acc = curr.templatePath;
@@ -201,7 +179,7 @@ export async function useTemplate() {
       });
 
     // if project dir is not empty exit the process
-    // TODO: implement clierror, `ENOEMPTYDIR`
+    // TODO: implement clierror, `E_NO_EMPTY_DIR`
     if (!isProjectDirEmpty) {
       console.log(
         `${projectName} exists with some files, please clean the project to start a new one`
@@ -216,7 +194,7 @@ export async function useTemplate() {
     await fs
       .mkdir(path.join(cwd, projectName))
       .then(() => {})
-      // TODO: impelement internal cli error `EINTERNAL`
+      // TODO: impelement internal cli error `E_INTERNAL`
       .catch(() => {
         console.log(`Uh-uh, Something went wrong`);
       });
@@ -240,19 +218,14 @@ export async function cloneProject({
 }) {
   // now work inside the project folder
   let createdProjectDir = path.join(cwd, projectName);
+  let isExpensiveWay: boolean = false;
 
   try {
     if (!(argv instanceof Promise)) {
       // the last value provided by the user with `--template-source` cli option
-      templateSource = Object.keys(argv).reduce<string | undefined>(
-        (acc, curr) => {
-          if (curr === "template-source") {
-            acc = argv[curr] as string;
-          }
-          return acc;
-        },
-        undefined
-      );
+      templateSource = argv["template-source"] as string;
+      // the last value provided by the user with `--expensive-way` cli option
+      isExpensiveWay = argv["expensive-way"] as boolean;
     }
 
     // if git repo is remote repo and `.git` is not included at the end
@@ -261,74 +234,248 @@ export async function cloneProject({
       templateSource.startsWith("https://") &&
       !templateSource.endsWith(".git")
     ) {
+      // add `.git` at the end
       templateSource = `${templateSource}.git`;
     }
 
     templateSource =
       templateSource ?? "https://github.com/nirvikpurkait/tsp-temp.git";
 
-    let repositoryName = templateSource
-      .split("/")
-      .reduce<string>((acc, curr) => {
-        if (curr.endsWith(".git")) {
-          acc = curr.split(".git")[0];
-          return acc;
-        }
-        return acc;
-      }, "");
-
     // make the project folder as current working directory
     process.chdir(createdProjectDir);
 
-    // clone the repo locally
-    await execAsync(`git clone ${templateSource}`, {
-      cwd: createdProjectDir,
-    }).catch(() => {
-      throw new CliError("ENOTEMPSOURC");
-    });
+    // if repoo is a remote repo
+    if (templateSource.startsWith("https://")) {
+      const repositoryOwner = templateSource.split("/")[3];
+      let repositoryName = templateSource.split("/")[4].split(".git")[0];
 
-    if (repositoryName === "") {
-      const dirList = await fs.readdir(createdProjectDir);
-      repositoryName = dirList[0];
+      // decide what kind of remote repo is
+      let remoteRepositoryProvider: "github" | "gitlab" | "local" = (() => {
+        switch (templateSource.split("/")[2]) {
+          case "github.com":
+            return "github";
+          case "gitlab.com":
+            return "gitlab";
+          default:
+            return "local";
+        }
+      })();
+
+      // template is being created by below process, ignore building with expensive way
+      isExpensiveWay = false;
+
+      if (remoteRepositoryProvider === "github") {
+        const API_BASE = "https://api.github.com";
+
+        // the last value provided by the user with `--template-branch` cli option
+        let BRANCH: string | undefined;
+
+        if (!(argv instanceof Promise)) {
+          // default branch frome where the template should be fetched
+          BRANCH = (argv["template-branch"] as string) ?? "main";
+        }
+
+        async function downloadFilesFromGitHub(
+          filePathOnGitHub = template,
+          localPath = process.cwd()
+        ) {
+          // github content url
+          const url = `${API_BASE}/repos/${repositoryOwner}/${repositoryName}/contents/${filePathOnGitHub}?ref=${BRANCH}`;
+
+          type TGitHubApiResponse = {
+            name: string;
+            path: string;
+            sha: string;
+            size: number;
+            url: string;
+            html_url: string;
+            git_url: string;
+            download_url: string | null;
+            type: "file" | "dir";
+            _links: {
+              self: string;
+              git: string;
+              html: string;
+            };
+          }[];
+
+          // get list of content
+          const data: TGitHubApiResponse = await axios
+            .get(url, {
+              headers: { Accept: "application/vnd.github.v3+json" },
+            })
+            .then((res) => {
+              return res.data;
+            })
+            .catch((e) => {
+              if (e instanceof AxiosError) {
+                throw new CliError(
+                  "E_NO_TEMP_SOURCE",
+                  `The template source you have provided does not exists\n\n"${BRANCH}" is assumed as default branch,\n\nIf this repo has a different branch as default branch pass it with --template-branch=<branch-name>\n\n`
+                );
+              }
+            });
+
+          for (const file of data) {
+            // if item is file, download it
+            if (file.type === "file") {
+              const fileRes = await axios.get(file.download_url!, {
+                responseType: "arraybuffer",
+              });
+              await fse.outputFile(`${localPath}/${file.name}`, fileRes.data);
+            } else if (file.type === "dir") {
+              // if item is folder, recursively fetch with much more depth
+              await downloadFilesFromGitHub(
+                file.path,
+                `${localPath}/${file.name}`
+              );
+            }
+          }
+        }
+
+        try {
+          await downloadFilesFromGitHub();
+        } catch (error) {
+          if (error instanceof CliError) throw error;
+          if (error instanceof AxiosError) throw new CliError("E_INTERNAL");
+        }
+      }
+
+      if (remoteRepositoryProvider === "gitlab") {
+        const GITLAB_PROJECT = `${repositoryOwner}/${repositoryName}`;
+        const TARGET_FOLDER = `${template}`;
+        // default branch frome where the template should be fetched
+        // the last value provided by the user with `--template-branch` cli option
+        let BRANCH: string | undefined;
+
+        if (!(argv instanceof Promise)) {
+          // default branch frome where the template should be fetched
+          BRANCH = (argv["template-branch"] as string) ?? "main";
+        }
+
+        const API_BASE = "https://gitlab.com/api/v4";
+        const RAW_BASE = "https://gitlab.com";
+
+        type TGitLabApiResponse = {
+          id: string;
+          name: string;
+          type: "blob" | "tree";
+          path: string;
+          mode: string;
+        }[];
+
+        async function downloadFilesFromGitLab(
+          templateToDownload: string = TARGET_FOLDER,
+          localPath = process.cwd()
+        ) {
+          const url = new URL(
+            `${API_BASE}/projects/${encodeURIComponent(
+              GITLAB_PROJECT
+            )}/repository/tree`
+          );
+          url.searchParams.set("path", templateToDownload);
+
+          const data: TGitLabApiResponse = await axios
+            .get(url.toString())
+            .then((res) => res.data)
+            .catch((e) => {
+              if (e instanceof AxiosError) {
+                throw new CliError(
+                  "E_NO_TEMP_SOURCE",
+                  `The template source you have provided does not exists\n\n"${BRANCH}" is assumed as default branch,\n\nIf this repo has a different branch as default branch pass it with --template-branch=<branch-name>\n\n`
+                );
+              }
+            });
+
+          for (const item of data) {
+            // if item is file, download it
+            if (item.type === "blob") {
+              const fileUrl = `${RAW_BASE}/${GITLAB_PROJECT}/-/raw/${BRANCH}/${item.path}`;
+
+              const fileRes = await axios.get(fileUrl);
+
+              await fse.outputFile(
+                `${localPath}/${trimPath(item.path, template)}`,
+                fileRes.data
+              );
+            } else if (item.type === "tree") {
+              // if item is folder, recursively fetch with much more depth
+              await downloadFilesFromGitLab(item.path, localPath);
+            }
+          }
+        }
+
+        try {
+          await downloadFilesFromGitLab();
+        } catch (error) {
+          throw new CliError("E_INTERNAL");
+        }
+      }
     }
 
-    const dirToCopyFrom = path.join(
-      createdProjectDir,
-      repositoryName,
-      template
-    );
-    const dirToPasteInto = path.join(createdProjectDir);
+    // TODO: implement optimized way like github for gitlab and bitbucket
 
-    // get list of files and folders to copy
-    let copiedFilesAndFolders;
-
-    copiedFilesAndFolders = await fs
-      .readdir(dirToCopyFrom, {
-        withFileTypes: true,
-      })
-      .catch(() => {
-        throw new CliError("EDIRNOEXIST");
+    // if the repo is local repo
+    if (isExpensiveWay) {
+      let repositoryName = templateSource
+        .split("/")
+        .reduce<string>((acc, curr) => {
+          if (curr.endsWith(".git")) {
+            acc = curr.split(".git")[0];
+            return acc;
+          }
+          return acc;
+        }, "");
+      // clone the repo locally
+      await execAsync(`git clone ${templateSource}`, {
+        cwd: createdProjectDir,
+      }).catch(() => {
+        throw new CliError("E_NO_TEMP_SOURCE");
       });
 
-    for (const eachFileOrFolder of copiedFilesAndFolders) {
-      const srcPath = path.join(dirToCopyFrom, eachFileOrFolder.name);
-      const destPath = path.join(dirToPasteInto, eachFileOrFolder.name);
+      if (repositoryName === "") {
+        const dirList = await fs.readdir(createdProjectDir);
+        repositoryName = dirList[0];
+      }
 
-      // move the files into new project
-      await fs.rename(srcPath, destPath).catch(() => {
-        throw new CliError("EMOVERES");
-      });
+      const dirToCopyFrom = path.join(
+        createdProjectDir,
+        repositoryName,
+        template
+      );
+      const dirToPasteInto = path.join(createdProjectDir);
+
+      // get list of files and folders to copy
+      let copiedFilesAndFolders;
+
+      copiedFilesAndFolders = await fs
+        .readdir(dirToCopyFrom, {
+          withFileTypes: true,
+        })
+        .catch(() => {
+          throw new CliError("E_DIR_NOT_EXIST");
+        });
+
+      for (const eachFileOrFolder of copiedFilesAndFolders) {
+        const srcPath = path.join(dirToCopyFrom, eachFileOrFolder.name);
+        const destPath = path.join(dirToPasteInto, eachFileOrFolder.name);
+
+        // move the files into new project
+        await fs.rename(srcPath, destPath).catch(() => {
+          throw new CliError("E_MOVE_RES");
+        });
+      }
+
+      // delete force-recursively actual repo
+      await fs
+        .rm(path.join(createdProjectDir, repositoryName), {
+          force: true,
+          recursive: true,
+        })
+        .catch(() => {
+          throw new CliError("E_REM_TEMP_SOURCE");
+        });
     }
-
-    // delete force-recursively actual repo
-    await fs
-      .rm(path.join(createdProjectDir, repositoryName), {
-        force: true,
-        recursive: true,
-      })
-      .catch(() => {
-        throw new CliError("EREMTEMPSOUR");
-      });
 
     let shouldSkipInstallDependencies: boolean | undefined;
 
@@ -353,7 +500,7 @@ export async function cloneProject({
       execSync(`${packageManager} install`, { stdio: "inherit" });
     }
 
-    // if error return to the directory from where the `tsp-temp` was run
+    // return to the directory from where the `tsp-temp` was run
     process.chdir(path.join(createdProjectDir, "../"));
 
     const changeDir = `cd ${projectName}`;
@@ -372,7 +519,7 @@ export async function cloneProject({
       process.chdir(path.join(createdProjectDir, "../"));
 
       switch (error.code) {
-        case "EREMTEMPSOUR":
+        case "E_REM_TEMP_SOURCE":
           await fs.rm(path.join(process.cwd(), projectName), {
             force: true,
             recursive: true,
@@ -382,7 +529,7 @@ export async function cloneProject({
           process.stdout.write(`Please run the command again.\n`);
           process.exit();
 
-        case "EINTERNAL":
+        case "E_INTERNAL":
           await fs.rm(path.join(process.cwd(), projectName), {
             force: true,
             recursive: true,
@@ -391,7 +538,7 @@ export async function cloneProject({
           process.stdout.write(`Please run the command again.\n`);
           process.exit();
 
-        case "EMOVERES":
+        case "E_MOVE_RES":
           await fs.rm(path.join(process.cwd(), projectName), {
             force: true,
             recursive: true,
@@ -400,7 +547,7 @@ export async function cloneProject({
           process.stdout.write(`Please run the command again.\n`);
           process.exit();
 
-        case "EDIRNOEXIST":
+        case "E_DIR_NOT_EXIST":
           await fs.rm(path.join(process.cwd(), projectName), {
             force: true,
             recursive: true,
@@ -414,7 +561,7 @@ export async function cloneProject({
           );
           process.exit();
 
-        case "ENOTEMPSOURC":
+        case "E_NO_TEMP_SOURCE":
           await fs.rm(path.join(process.cwd(), projectName), {
             force: true,
             recursive: true,
@@ -431,6 +578,18 @@ export async function cloneProject({
     }
   }
   process.exit();
+}
+
+function trimPath(fullPath: string, removingPortion: string) {
+  let trimmingLength;
+  trimmingLength =
+    removingPortion.endsWith("/") && removingPortion.startsWith("/")
+      ? removingPortion.length - 1
+      : removingPortion.endsWith("/") || removingPortion.startsWith("/")
+      ? removingPortion.length
+      : removingPortion.length + 1;
+
+  return fullPath.substring(trimmingLength);
 }
 
 export {};
