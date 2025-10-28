@@ -22,18 +22,76 @@ pnpm dlx tsp-temp <project-name>
 yarn dlx tsp-temp <project-name>
 ```
 
-## Options
+---
 
-| Options             | Alias | Description                                                                                                                                                                  | Type    | Defaut value                                |
-| :------------------ | :---- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- | ------------------------------------------- |
-| `--version`         | `-v`  | Shows version of the tool                                                                                                                                                    | boolean |
-| `--help`            | `-h`  | Shows help menu                                                                                                                                                              | boolean |
-| `--package-manager` | `-P`  | Provide package manager to work with (Currently supports npm, pnpm, yarn)                                                                                                    | string  |
-| `--template`        | `-t`  | Provide a template on basis of which new project should be created                                                                                                           | string  |
-| `--template-source` |       | Provide a remote repository of template to use. Only use it with custom template other than provided templates                                                               | string  | `https://github.com/nirvikpurkait/tsp-temp` |
-| `--template-branch` |       | Provide repository branch to generate from. Only use it with custom template other than provided templates                                                                   | string  | `main`                                      |
-| `--skip-install`    |       | Skips installation of dependencies                                                                                                                                           | boolean | `false`                                     |
-| `--expensive-way`   |       | Creates template in an expensive way, if the provided remote source is not supported by cli. (It might fail as well. Providing support for other remote source is under way) | boolean | `false`                                     |
+# Options
+
+- ### version
+
+  **Option:** `--version`
+  **Alias:** `-v`
+  **Type:** `boolean`
+  Shows version of the tool
+
+- ### help
+
+  **Option:** `--help`
+  **Alias:** `-h`
+  **Type:** `boolean`
+  Shows help menu
+
+- ### package-manager
+
+  **Option:** `--package-manager`
+  **Alias:** `-P`
+  **Type:** `string`
+  Provide package manager to work with
+  (Currently supports `npm`, `pnpm`, `yarn`)
+
+- ### template
+
+  **Option:** `--template`
+  **Alias:** `-t`
+  **Type:** `string`
+  Provide a template path on basis of which new project should be created
+  **Available templates:**
+  |Template options|Template Description|
+  |-|-|
+  |`nextjs`|Next.Js|
+  |`react-router-v7`|React Router V7 (framework mode)|
+  |`vanila-ts`|Vanila TS|
+
+- ### template-source
+
+  **Option:** `--template-source`
+  **Type:** `string`
+  **Default:** `https://github.com/nirvikpurkait/tsp-temp`
+  Provide a local or remote repository of template to use.
+
+- ### template-branch
+
+  **Option:** `--template-branch`
+  **Type:** `string`
+  **Default:** `main`
+  Provide repository branch to generate from.
+  (Only use it with remote repository on **GitHub** and **GitLab** template)
+
+- ### skip-install
+
+  **Option:** `--skip-install`
+  **Type:** `boolean`
+  **Default:** `false`
+  Skips installation of dependencies
+
+- ### expensive-way
+
+  **Option:** `--expensive-way`
+  **Type:** `boolean`
+  **Default:** `false`
+  Creates template in an expensive way, if the provided remote source is not supported by cli.
+  (It might fail as well. Providing support for other remote source is under way)
+
+---
 
 # Project structure
 
@@ -45,15 +103,19 @@ yarn dlx tsp-temp <project-name>
 
 - **Git Hook -** Git hook related scripts on `scripts/hooks/*` (as I am much more comfortable on JS/TS rather than `bash` or `powershell` script's complex process)
 
+---
+
 # Adding new template
 
 You are free to add any template for yourself and others too.
 
 Before adding any new template test the template locally, to ensure it works or not.
 
+---
+
 # Case convention
 
-| Case         | Example      | Case         | Example      |
-| :----------- | :----------- | :----------- | ------------ |
-| `kebab-case` | `kebab-case` | `PascalCase` | `PascalCase` |
-| `camelCase`  | `camelCase`  | `snake_case` | `snake_case` |
+| Case         | Example           | Case             | Example           |
+| :----------- | :---------------- | :--------------- | ----------------- |
+| `kebab-case` | `case-convention` | `CaseConvention` | `PascalCase`      |
+| `camelCase`  | `caseConvention`  | `snake_case`     | `case_convention` |

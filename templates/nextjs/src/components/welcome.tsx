@@ -15,7 +15,7 @@ export default function Welcome() {
     >
       <main
         className={cn(
-          `row-start-2 flex flex-col items-center gap-[32px] sm:items-start`
+          `row-start-2 flex flex-col items-center gap-8 sm:items-start`
         )}
       >
         <Image
@@ -78,7 +78,7 @@ export default function Welcome() {
       </main>
       <footer
         className={cn(
-          `row-start-3 flex flex-wrap items-center justify-center gap-[24px]`
+          `row-start-3 flex flex-wrap items-center justify-center gap-6`
         )}
       >
         <a

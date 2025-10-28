@@ -6,10 +6,35 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 <!-- ## [Unreleased] - 2025-10-26
+### Added
+### Removed
+### Optimized
+### Fixed
+### Changed
+[Unreleased]: https://github.com/nirvikpurkait/tsp-temp/compare/v0.0.3...Unreleased -->
+<!-- ________________________________________________ -->
 
-[Unreleased]: https://github.com/nirvikpurkait/tsp-temp/compare/v0.0.2...Unreleased -->
+---
 
-## [0.0.3] - 2025-10-26
+## [0.0.4] - 2025-10-28
+
+### Added
+
+- Loading spinner when process running for better UX
+
+### Changed
+
+- README.md docs pattern
+
+[0.0.4]: https://github.com/nirvikpurkait/tsp-temp/compare/v0.0.3...0.0.4
+
+### Fixed
+
+- Non creation of project name and version
+
+---
+
+## [0.0.3] - 2025-10-28
 
 [0.0.3]: https://github.com/nirvikpurkait/tsp-temp/compare/v0.0.2...0.0.3
 

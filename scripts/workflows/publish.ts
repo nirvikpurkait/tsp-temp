@@ -30,7 +30,6 @@ async function main() {
         ...process.env,
         NODE_AUTH_TOKEN: process.env.NPM_TOKEN,
       },
-      encoding: "utf-8",
     });
   } catch (err) {
     console.error("❌ npm publish failed:");
@@ -53,10 +52,11 @@ main().catch((err) => {
   process.exit(1);
 });
 
-type RunCommandOptions = ExecSyncOptionsWithStringEncoding;
+type RunCommandOptions = Omit<ExecSyncOptionsWithStringEncoding, "encoding"> &
+  Partial<Pick<ExecSyncOptionsWithStringEncoding, "encoding">>;
 function runCommand(
   cmd: string,
   options: RunCommandOptions = {} as RunCommandOptions
 ) {
-  return execSync(cmd, { ...options, stdio: "pipe", encoding: "utf-8" }).trim();
+  return execSync(cmd, { stdio: "pipe", encoding: "utf-8", ...options }).trim();
 }

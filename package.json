@@ -1,6 +1,6 @@
 {
   "name": "tsp-temp",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "A cli tool to create a template from git repository",
   "scripts": {
     "pretest": "pnpm build:cli",
@@ -37,7 +37,7 @@
   "bugs": {
     "url": "https://github.com/nirvikpurkait/tsp-temp/issues"
   },
-  "homepage": "https://github.com/nirvikpurkait/tsp-temp#readme",
+  "homepage": "https://github.com/nirvikpurkait/tsp-temp",
   "devDependencies": {
     "@types/fs-extra": "^11.0.4",
     "@types/node": "^24.9.1",
@@ -51,6 +51,7 @@
     "axios": "^1.12.2",
     "enquirer": "^2.4.1",
     "fs-extra": "^11.3.2",
+    "ora": "^9.0.0",
     "yargs": "^18.0.0"
   }
 }

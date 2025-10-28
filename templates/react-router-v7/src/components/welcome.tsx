@@ -10,7 +10,7 @@ export default function Welcome() {
     >
       <main
         className={cn(
-          `row-start-2 flex flex-col items-center gap-[32px] sm:items-start`
+          `row-start-2 flex flex-col items-center gap-8 sm:items-start`
         )}
       >
         <img
@@ -57,7 +57,7 @@ export default function Welcome() {
             className={cn(
               `flex h-10 w-full items-center justify-center rounded-full border border-solid border-white/10 px-4 text-sm font-medium transition-colors hover:border-transparent hover:bg-white/10 sm:h-12 sm:w-auto sm:px-5 sm:text-base md:w-[158px]`
             )}
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
+            href="https://reactrouter.com/home"
             target="_blank"
             rel="noopener noreferrer"
           >

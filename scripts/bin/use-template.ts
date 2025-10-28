@@ -9,6 +9,7 @@ import path from "node:path";
 import { CliError } from "./use-utility";
 import { promisify } from "node:util";
 import { templateNameMetaData } from "./data";
+import ora from "ora";
 
 const execAsync = promisify(exec);
 
@@ -333,6 +334,12 @@ export async function cloneProject({
           }
         }
 
+        // spinner
+        ora({
+          color: "blue",
+          text: "Cloning project\n",
+        }).start();
+
         try {
           await downloadFilesFromGitHub();
         } catch (error) {
@@ -405,6 +412,12 @@ export async function cloneProject({
           }
         }
 
+        // spinner
+        ora({
+          color: "blue",
+          text: "Cloning project\n",
+        }).start();
+
         try {
           await downloadFilesFromGitLab();
         } catch (error) {
@@ -448,6 +461,12 @@ export async function cloneProject({
       // get list of files and folders to copy
       let copiedFilesAndFolders;
 
+      // spinner
+      ora({
+        color: "blue",
+        text: "Cloning project\n",
+      }).start();
+
       copiedFilesAndFolders = await fs
         .readdir(dirToCopyFrom, {
           withFileTypes: true,
@@ -467,14 +486,9 @@ export async function cloneProject({
       }
 
       // delete force-recursively actual repo
-      await fs
-        .rm(path.join(createdProjectDir, repositoryName), {
-          force: true,
-          recursive: true,
-        })
-        .catch(() => {
-          throw new CliError("E_REM_TEMP_SOURCE");
-        });
+      await fse.emptyDir(`${createdProjectDir}/${repositoryName}`).catch(() => {
+        throw new CliError("E_REM_TEMP_SOURCE");
+      });
     }
 
     let shouldSkipInstallDependencies: boolean | undefined;
@@ -495,10 +509,42 @@ export async function cloneProject({
       }, undefined);
     }
 
+    const packageJsonContent = JSON.parse(
+      (await fse.readFile(`${createdProjectDir}/package.json`)).toString()
+    );
+
+    packageJsonContent.name = projectName;
+
+    await fse.writeFile(
+      `${createdProjectDir}/package.json`,
+      JSON.stringify(packageJsonContent, null, 2),
+      {
+        encoding: "utf-8",
+      }
+    );
+
+    // initialize git
+    execSync(`git init`);
+    execSync(`git config core.autocrlf input`);
+    process.stdout.write("Initialized empty git repository.\n\n");
+
     // install packages with provided pacage manager
     if (!shouldSkipInstallDependencies) {
+      // spinner
+      ora({
+        color: "blue",
+        text: "Installing dependencies\n",
+      }).start();
+
       execSync(`${packageManager} install`, { stdio: "inherit" });
     }
+
+    // initialize git
+    execSync(`git add .`, { stdio: "inherit" });
+
+    const initialCommitMessage = "Initial commit from tsp-temp";
+    // initialize git
+    execSync(`git commit -m "${initialCommitMessage}".`);
 
     // return to the directory from where the `tsp-temp` was run
     process.chdir(path.join(createdProjectDir, "../"));

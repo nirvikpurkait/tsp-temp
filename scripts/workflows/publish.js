@@ -30,7 +30,6 @@ async function main() {
                 ...process.env,
                 NODE_AUTH_TOKEN: process.env.NPM_TOKEN,
             },
-            encoding: "utf-8",
         });
     }
     catch (err) {
@@ -49,5 +48,5 @@ main().catch((err) => {
     process.exit(1);
 });
 function runCommand(cmd, options = {}) {
-    return (0, child_process_1.execSync)(cmd, { ...options, stdio: "pipe", encoding: "utf-8" }).trim();
+    return (0, child_process_1.execSync)(cmd, { stdio: "pipe", encoding: "utf-8", ...options }).trim();
 }
